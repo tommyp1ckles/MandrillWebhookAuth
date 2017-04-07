@@ -20,7 +20,32 @@ func VerifyRequest(req *http.Request, authKey string) error {
   signature := req.Header.Get("X-Mandrill-Signature")
   url := req.URL.String()
   params := postParams(req)
-  return VerifySignature(authKey, url, signature, params)
+  signedData := sign(authKey, url, params)
+
+  if hmac.Equal([]byte(signedData), []byte(signature)) {
+    return nil
+  } else {
+    return ErrBadSig
+  }
+}
+
+func SignRequest(authKey string, req *http.Request) string {
+  url := req.URL.String()
+  params := postParams(req)
+  return sign(authKey, url, params)
+}
+
+func sign(authkey, url string, params []KeyValue) string {
+  signedData := url
+  for _, kv := range params {
+    signedData += kv.Key + kv.Val
+  }
+
+  mac := hmac.New(sha1.New, []byte(authKey))
+  mac.Write([]byte(signedData))
+  hashedData := mac.Sum(nil)
+
+  return base64.StdEncoding.EncodeToString(hashedData)
 }
 
 func postParams(req *http.Request) []KeyValue {
@@ -44,24 +69,4 @@ func (a ByKey) Len() int            { return len(a) }
 func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByKey) Less(i, j int) bool {
   return strings.Compare(a[i].Key, a[j].Key) == -1
-}
-
-// VerifySignature verifies mandrill request fields.
-func VerifySignature(authKey, url, signature string, params []KeyValue) error {
-  signedData := url
-  for _, kv := range params {
-    signedData += kv.Key + kv.Val
-  }
-
-  mac := hmac.New(sha1.New, []byte(authKey))
-  mac.Write([]byte(signedData))
-  hashedData := mac.Sum(nil)
-
-  encodedHashedData := base64.StdEncoding.EncodeToString(hashedData)
-
-  if hmac.Equal([]byte(encodedHashedData), []byte(signature)) {
-    return nil
-  } else {
-    return ErrBadSig
-  }
 }

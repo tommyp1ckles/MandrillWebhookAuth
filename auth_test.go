@@ -18,16 +18,6 @@ var (
   }
 )
 
-func TestVerifySignature(t *testing.T) {
-  Convey("VerifySignature", t, func() {
-    Convey("should verify correctly", func() {
-      So(
-        VerifySignature(authKey, URL, XMandrillSignature, params),
-        ShouldBeNil,
-      )
-    })
-  })
-}
 
 func TestVerifyRequest(t *testing.T) {
   Convey("VerifyRequest", t, func() {
