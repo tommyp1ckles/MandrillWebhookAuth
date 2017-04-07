@@ -35,7 +35,7 @@ func SignRequest(authKey string, req *http.Request) string {
   return sign(authKey, url, params)
 }
 
-func sign(authkey, url string, params []KeyValue) string {
+func sign(authKey, url string, params []KeyValue) string {
   signedData := url
   for _, kv := range params {
     signedData += kv.Key + kv.Val
@@ -45,7 +45,8 @@ func sign(authkey, url string, params []KeyValue) string {
   mac.Write([]byte(signedData))
   hashedData := mac.Sum(nil)
 
-  return base64.StdEncoding.EncodeToString(hashedData)
+  sig := base64.StdEncoding.EncodeToString(hashedData)
+  return sig
 }
 
 func postParams(req *http.Request) []KeyValue {
