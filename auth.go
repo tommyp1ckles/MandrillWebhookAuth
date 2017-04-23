@@ -11,6 +11,8 @@ import (
 )
 
 var (
+  // ErrBadSig is returned when verification with an incorrect 
+  // is used.
   ErrBadSig = errors.New("Bad Signature")
 )
 
@@ -29,6 +31,8 @@ func VerifyRequest(req *http.Request, authKey string) error {
   }
 }
 
+// SignRequest returns a signature string given a HTTP request 
+// and a key.
 func SignRequest(authKey string, req *http.Request) string {
   url := req.URL.String()
   params := postParams(req)
@@ -59,11 +63,15 @@ func postParams(req *http.Request) []KeyValue {
   return arr
 }
 
+// KeyValue holds a key and corresponding value, to be used for sorting
+// collections of key-value pairs.
 type KeyValue struct {
     Key string
     Val string
 }
 
+// ByKey implements the sortable interface for a KeyValue slice 
+// such that it is sorted by key, in non-decreasing order.
 type ByKey []KeyValue
 
 func (a ByKey) Len() int           { return len(a) }
